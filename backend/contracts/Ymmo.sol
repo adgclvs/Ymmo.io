@@ -1,4 +1,8 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.24;
 
-contract Ymmo {}
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract Ymmo is Ownable {
+    constructor() Ownable(msg.sender) {}
+}
