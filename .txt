@@ -1,0 +1,16 @@
+Features de base :
+  - Achat du NFT
+      Mettre en place le mint du NFT et lui associer une constante du % , sachant que sa valeur est le % du prix du bien.
+  - Calcul du rendement
+      Fonction qui calcul le rendement de chaque utilisateur en fonction de son NFT. à sa demande ?
+  - Distribution du rendement
+      Envoie du rendment sur les addresses
+  - Vente du NFT (avec possibilité de garder une partie du %) -> Burn ?
+      Fonction qui burn le NFT, qui recréer un NFT de la valeur souhaité par le client (s'il veux en garder une partie) et remise en vente du reste sur la plateforme
+      Ou burn du NFT et remise en vente de la totalité (si le client veux vendre 100%)
+
+
+Questions : 
+  - Combien le client paye son NFT, si il prends 30% d'un bien à 100k doit-il payer 30k ?
+  - Si le client vends son NFT, on lui rachète à quel prix ? (prix du maché ou prix initial?)
+  - Pour la distribution des rendements cel aest automatique ou est-ce que c'est aux clients de réclamer leur argent ?
