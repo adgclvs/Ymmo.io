@@ -13,8 +13,8 @@ contract YmmoFactory is Ownable {
 
     constructor() Ownable(msg.sender) {}
 
-    function createYmmo() external onlyOwner {
-        ymmo = new Ymmo();
+    function createYmmo(uint128 _valueOfYmmo, uint128 _indexOfYmmo) external onlyOwner {
+        ymmo = new Ymmo(_valueOfYmmo, _indexOfYmmo);
         list_of_ymmos.push(ymmo);
         emit NewContractYmmoDeploy(address(ymmo));
     }
