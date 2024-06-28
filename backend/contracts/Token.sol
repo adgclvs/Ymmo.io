@@ -12,8 +12,4 @@ contract Token is ERC20, Ownable {
     function decimals() public view virtual override returns (uint8) {
         return 2;
     }
-
-    function mint(uint256 _amountOfToken) external onlyOwner {
-        _mint(msg.sender, _amountOfToken);
-    }
 }
