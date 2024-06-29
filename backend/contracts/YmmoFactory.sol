@@ -3,6 +3,7 @@ pragma solidity 0.8.24;
 
 import "./Ymmo.sol";
 import "./Bank.sol";
+import "../contants/index.js";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract YmmoFactory is Ownable {
@@ -13,6 +14,7 @@ contract YmmoFactory is Ownable {
     event NewContractYmmoDeploy(address contractAddress);
 
     constructor() Ownable(msg.sender) {
+        _usdcContract = USDC_SEPOLIA_ADDRESS;
         bankAddress = address(new Bank(_usdcContract)); //Change _usdcContract with the usdc Contract on the correct chain
     }
 

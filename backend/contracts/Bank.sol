@@ -23,15 +23,6 @@ contract Bank is Ownable {
         emit Deposit(msg.sender, _amount);
     }
 
-    function withdraw(uint256 amount) external onlyOwner {
-        uint256 usdcBalance = usdcContract.balanceOf(address(this));
-        require(usdcBalance >= amount, "Insufficient USDC balance");
-
-        usdcContract.transfer(owner(), amount);
-
-        emit Withdraw(owner(), amount);
-    }
-
     function transferUSDC(address to, uint256 amount) external onlyOwner {
         require(to != address(0), "Invalid address");
         uint256 usdcBalance = usdcContract.balanceOf(address(this));
