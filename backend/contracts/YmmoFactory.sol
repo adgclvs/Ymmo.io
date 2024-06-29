@@ -2,19 +2,22 @@
 pragma solidity 0.8.24;
 
 import "./Ymmo.sol";
+import "./Bank.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract YmmoFactory is Ownable {
-    Ymmo ymmo;
-
+    address private bankAddress;
+    address private _usdcContract;
     Ymmo[] public list_of_ymmos;
 
     event NewContractYmmoDeploy(address contractAddress);
 
-    constructor() Ownable(msg.sender) {}
+    constructor() Ownable(msg.sender) {
+        bankAddress = address(new Bank(_usdcContract)); //Change _usdcContract with the usdc Contract on the correct chain
+    }
 
     function createYmmo(uint128 _valueOfYmmo, uint128 _indexOfYmmo) external onlyOwner {
-        ymmo = new Ymmo(_valueOfYmmo, _indexOfYmmo);
+        Ymmo ymmo = new Ymmo(_valueOfYmmo, _indexOfYmmo, bankAddress);
         list_of_ymmos.push(ymmo);
         emit NewContractYmmoDeploy(address(ymmo));
     }
