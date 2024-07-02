@@ -9,13 +9,12 @@ import "./Bank.sol";
 
 contract Ymmo is Ownable {
     uint128 private valueOfYmmo;
-    uint128 private indexOfYmmo;
+    uint64 private indexOfYmmo;
+    uint64 private valueIncome;
     Token private tokenContract;
     Bank private bank;
 
-    mapping(address => uint256) balances;
-
-    constructor(uint128 _valueOfYmmo, uint128 _indexOfYmmo, address _bankAddress) Ownable(msg.sender) {
+    constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo, address _bankAddress) Ownable(msg.sender) {
         valueOfYmmo = _valueOfYmmo;
         indexOfYmmo = _indexOfYmmo;
         bank = Bank(_bankAddress);
@@ -39,5 +38,20 @@ contract Ymmo is Ownable {
         // Transfer YMmo tokens from the contract to the buyer
         bool tokenSuccess = tokenContract.transfer(msg.sender, amountToBuy);
         require(tokenSuccess, "Token transfer failed");
+    }
+
+    function setPercentageIncome(uint64 _valueIncome) external onlyOwner {
+        valueIncome = _valueIncome;
+    }
+
+    function getIncome() external {
+        uint256 tokenBalance = tokenContract.balanceOf(msg.sender);
+        require(tokenBalance > 0, "No YMmo tokens owned");
+
+        uint256 totalSupply = tokenContract.totalSupply();
+        uint256 userShare = (tokenBalance * 10 ** 2) / totalSupply;
+        uint256 income = (userShare * valueIncome) / (10 ** 2);
+
+        bank.transferUSDC(msg.sender, income);
     }
 }

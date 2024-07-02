@@ -14,8 +14,8 @@ contract Bank is Ownable {
         usdcContract = IERC20(_usdcAddress);
     }
 
-    function getBalance() external view returns (uint256) {
-        return usdcContract.balanceOf(address(this));
+    function getBalance(address _address) public view returns (uint256) {
+        return usdcContract.balanceOf(_address);
     }
 
     function deposit(address _account, uint256 _amount) external {
@@ -30,10 +30,11 @@ contract Bank is Ownable {
     // On se garde une porte de sortie pour withdraw n'importe qui
     function transferUSDC(address _to, uint256 _amount) external onlyOwner {
         require(_to != address(0), "Invalid address");
-        uint256 usdcBalance = usdcContract.balanceOf(address(this));
+        uint256 usdcBalance = getBalance(address(this));
         require(usdcBalance >= _amount, "Insufficient USDC balance");
 
-        usdcContract.transfer(_to, _amount);
+        bool isSucces = usdcContract.transfer(_to, _amount);
+        require(isSucces, "Transfer Failled");
         emit Transfer(_to, _amount);
     }
 }

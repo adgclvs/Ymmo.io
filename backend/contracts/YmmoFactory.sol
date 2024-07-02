@@ -18,7 +18,7 @@ contract YmmoFactory is Ownable {
         bankAddress = address(new Bank(_usdcContract)); //Change _usdcContract with the usdc Contract on the correct chain
     }
 
-    function createYmmo(uint128 _valueOfYmmo, uint128 _indexOfYmmo) external onlyOwner {
+    function createYmmo(uint128 _valueOfYmmo, uint64 _indexOfYmmo) external onlyOwner {
         Ymmo ymmo = new Ymmo(_valueOfYmmo, _indexOfYmmo, bankAddress);
         list_of_ymmos.push(ymmo);
         emit NewContractYmmoDeploy(address(ymmo));
