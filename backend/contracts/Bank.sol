@@ -7,11 +7,15 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 contract Bank is Ownable {
     IERC20 public usdcContract;
 
-    event Deposit(address indexed user, uint256 amount);
-    event Withdraw(address indexed owner, uint256 amount);
+    event Deposit(address user, uint256 amount);
+    event Transfer(address to, uint256 amount);
 
     constructor(address _usdcAddress) Ownable(msg.sender) {
         usdcContract = IERC20(_usdcAddress);
+    }
+
+    function getBalance() external view returns (uint256) {
+        return usdcContract.balanceOf(address(this));
     }
 
     function deposit(address _account, uint256 _amount) external {
@@ -23,11 +27,13 @@ contract Bank is Ownable {
         emit Deposit(msg.sender, _amount);
     }
 
-    function transferUSDC(address to, uint256 amount) external onlyOwner {
-        require(to != address(0), "Invalid address");
+    // On se garde une porte de sortie pour withdraw n'importe qui
+    function transferUSDC(address _to, uint256 _amount) external onlyOwner {
+        require(_to != address(0), "Invalid address");
         uint256 usdcBalance = usdcContract.balanceOf(address(this));
-        require(usdcBalance >= amount, "Insufficient USDC balance");
+        require(usdcBalance >= _amount, "Insufficient USDC balance");
 
-        usdcContract.transfer(to, amount);
+        usdcContract.transfer(_to, _amount);
+        emit Transfer(_to, _amount);
     }
 }
