@@ -9,7 +9,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract YmmoFactory is Ownable {
     address private bankAddress;
     address private _usdcContract;
-    Ymmo[] public list_of_ymmos;
+    Ymmo[] private listOfYmmo;
 
     event NewContractYmmoDeploy(address contractAddress);
 
@@ -20,7 +20,11 @@ contract YmmoFactory is Ownable {
 
     function createYmmo(uint128 _valueOfYmmo, uint64 _indexOfYmmo) external onlyOwner {
         Ymmo ymmo = new Ymmo(_valueOfYmmo, _indexOfYmmo, bankAddress);
-        list_of_ymmos.push(ymmo);
+        listOfYmmo.push(ymmo);
         emit NewContractYmmoDeploy(address(ymmo));
+    }
+
+    function getListOfYmmo() external view returns (Ymmo[] memory) {
+        return listOfYmmo;
     }
 }
