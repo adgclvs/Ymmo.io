@@ -8,8 +8,4 @@ contract Token is ERC20, Ownable {
     constructor(uint256 initialSupply, string memory name, string memory symbol) ERC20(name, symbol) Ownable(msg.sender) {
         _mint(msg.sender, initialSupply);
     }
-
-    function decimals() public view virtual override returns (uint8) {
-        return 2;
-    }
 }

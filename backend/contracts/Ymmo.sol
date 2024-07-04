@@ -8,10 +8,10 @@ import "./Token.sol";
 import "./Bank.sol";
 
 contract Ymmo is Ownable {
-    uint128 private valueOfYmmo;
-    uint64 private indexOfYmmo;
-    uint64 private valueIncome;
-    Token private tokenContract;
+    uint128 public valueOfYmmo;
+    uint64 public indexOfYmmo;
+    uint64 public valueIncome;
+    Token public tokenContract;
     Bank private bank;
 
     constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo, address _bankAddress) Ownable(msg.sender) {
@@ -49,8 +49,8 @@ contract Ymmo is Ownable {
         require(tokenBalance > 0, "No YMmo tokens owned");
 
         uint256 totalSupply = tokenContract.totalSupply();
-        uint256 userShare = (tokenBalance * 10 ** 2) / totalSupply;
-        uint256 income = (userShare * valueIncome) / (10 ** 2);
+        uint256 userShare = (tokenBalance * 10 ** 18) / totalSupply;
+        uint256 income = (userShare * valueIncome) / (10 ** 18);
 
         bank.transferUSDC(msg.sender, income);
     }
