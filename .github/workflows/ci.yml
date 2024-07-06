@@ -30,7 +30,7 @@ jobs:
         if: steps.cache-node-modules.outputs.cache-hit != 'true'
         run: |
           cd backend
-          npm ci
+          npm install --legacy-peer-deps
 
       - name: Run Tests
         run: |
