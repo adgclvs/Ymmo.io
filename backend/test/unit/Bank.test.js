@@ -10,5 +10,5 @@ describe("YmmoFactory tests", function () {
     return { bank, owner, otherAccount };
   }
 
-  describe("Should deploy the contract", function () {});
+  describe("Deployment", function () {});
 });
