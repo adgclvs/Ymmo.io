@@ -27,7 +27,6 @@ contract Bank is Ownable {
         emit Deposit(msg.sender, _amount);
     }
 
-    // On se garde une porte de sortie pour withdraw n'importe qui
     function transferUSDC(address _to, uint256 _amount) external onlyOwner {
         require(_to != address(0), "Invalid address");
         uint256 usdcBalance = getBalance(address(this));

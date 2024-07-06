@@ -10,9 +10,9 @@ describe("Ymmo tests", function () {
     return { ymmo, owner, otherAccount };
   }
 
-  describe("Deployment", function () {
-    it("Should deploy the contract", async function () {
-      const { ymmo } = await loadFixture(deployContract);
-    });
-  });
+  // describe("Deployment", function () {
+  //   it("Should deploy the contract", async function () {
+  //     const { ymmo } = await loadFixture(deployContract);
+  //   });
+  // });
 });

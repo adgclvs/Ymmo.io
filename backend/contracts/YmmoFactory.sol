@@ -12,6 +12,8 @@ contract YmmoFactory is Ownable {
     Ymmo[] private listOfYmmo;
 
     event NewContractYmmoDeploy(address contractAddress);
+    event USDCContractUpdated(address newUSDCContract);
+    event BankAddressUpdated(address newBankAddress);
 
     constructor() Ownable(msg.sender) {
         setUSDCContract(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
@@ -20,10 +22,12 @@ contract YmmoFactory is Ownable {
 
     function setUSDCContract(address usdcAddress) public onlyOwner {
         _usdcContract = usdcAddress;
+        emit USDCContractUpdated(usdcAddress);
     }
 
     function setBankAddress(address _bankAddress) public onlyOwner {
         bankAddress = _bankAddress;
+        emit BankAddressUpdated(_bankAddress);
     }
 
     function createYmmo(uint128 _valueOfYmmo, uint64 _indexOfYmmo) external onlyOwner {
