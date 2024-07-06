@@ -9,4 +9,6 @@ describe("YmmoFactory tests", function () {
     const bank = await Bank.deploy(Bank);
     return { bank, owner, otherAccount };
   }
+
+  describe("Should deploy the contract", function () {});
 });
