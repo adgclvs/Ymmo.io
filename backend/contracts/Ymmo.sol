@@ -5,39 +5,37 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Token.sol";
-import "./Bank.sol";
 
 contract Ymmo is Ownable {
     uint128 public valueOfYmmo;
     uint64 public indexOfYmmo;
     uint64 public valueIncome;
     Token public tokenContract;
-    Bank private bank;
 
-    constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo, address _bankAddress) Ownable(msg.sender) {
+    event TokensPurchased(address buyer, uint256 amount, uint256 ethSpent);
+
+    constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo) Ownable(msg.sender) {
         valueOfYmmo = _valueOfYmmo;
         indexOfYmmo = _indexOfYmmo;
-        bank = Bank(_bankAddress);
         string memory name = "YMMO";
         string memory symbol = string(abi.encodePacked("YMMO_", Strings.toString(_indexOfYmmo)));
         tokenContract = new Token(_valueOfYmmo, name, symbol);
     }
 
-    function buyTokens(uint256 usdcAmount) external {
-        require(usdcAmount > 0, "You need to send some USDC");
+    function buyTokens() external payable {
+        require(msg.value > 0, "You need to send some ETH");
 
-        uint256 initialBalance = bank.usdcContract().balanceOf(address(bank));
-        bank.deposit(msg.sender, usdcAmount);
+        // Assuming 1 ETH = 2000 USD and 1 token = 1 USD for this example
+        uint256 ethToUsd = 2000; // This should be updated with a real-time feed or oracle in a real use case
+        uint256 amountToBuy = (msg.value * ethToUsd) / (1 ether);
 
-        uint256 finalBalance = bank.usdcContract().balanceOf(address(bank));
-        require(finalBalance - initialBalance == usdcAmount, "USDC deposit not detected in bank");
-
-        uint256 amountToBuy = usdcAmount; // Example rate: 1 YMmo = 1 USDC
         require(tokenContract.balanceOf(address(this)) >= amountToBuy, "Not enough tokens in the reserve");
 
         // Transfer YMmo tokens from the contract to the buyer
         bool tokenSuccess = tokenContract.transfer(msg.sender, amountToBuy);
         require(tokenSuccess, "Token transfer failed");
+
+        emit TokensPurchased(msg.sender, amountToBuy, msg.value);
     }
 
     function setPercentageIncome(uint64 _valueIncome) external onlyOwner {
@@ -52,6 +50,13 @@ contract Ymmo is Ownable {
         uint256 userShare = (tokenBalance * 10 ** 18) / totalSupply;
         uint256 income = (userShare * valueIncome) / (10 ** 18);
 
-        bank.transferUSDC(msg.sender, income);
+        payable(msg.sender).transfer(income);
     }
+
+    function withdrawETH(uint256 amount) external onlyOwner {
+        require(address(this).balance >= amount, "Insufficient balance");
+        payable(owner()).transfer(amount);
+    }
+
+    receive() external payable {}
 }

@@ -18,24 +18,6 @@ describe("YmmoFactory tests", function () {
     });
   });
 
-  describe("Setter", function () {
-    it("Should set the USDC contract address", async function () {
-      const { ymmoFactory } = await loadFixture(deployContract);
-      const fakeAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-      await expect(ymmoFactory.setUSDCContract(fakeAddress))
-        .to.emit(ymmoFactory, "USDCContractUpdated")
-        .withArgs(fakeAddress);
-    });
-
-    it("Should set the bank address", async function () {
-      const { ymmoFactory } = await loadFixture(deployContract);
-      const fakeAddress = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-      await expect(ymmoFactory.setBankAddress(fakeAddress))
-        .to.emit(ymmoFactory, "BankAddressUpdated")
-        .withArgs(fakeAddress);
-    });
-  });
-
   describe("Create Ymmo", function () {
     it("Should create a new Ymmo", async function () {
       const { ymmoFactory } = await loadFixture(deployContract);
