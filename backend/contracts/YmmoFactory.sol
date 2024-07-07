@@ -9,8 +9,6 @@ contract YmmoFactory is Ownable {
     Ymmo[] private listOfYmmo;
 
     event NewContractYmmoDeploy(address contractAddress);
-    event USDCContractUpdated(address newUSDCContract);
-    event BankAddressUpdated(address newBankAddress);
 
     constructor() Ownable(msg.sender) {}
 

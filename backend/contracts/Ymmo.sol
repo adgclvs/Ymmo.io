@@ -3,7 +3,6 @@ pragma solidity 0.8.24;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./Token.sol";
 
 contract Ymmo is Ownable {
@@ -13,6 +12,7 @@ contract Ymmo is Ownable {
     Token public tokenContract;
 
     event TokensPurchased(address buyer, uint256 amount, uint256 ethSpent);
+    event IncomeDistributed(address _address, uint256 _amount);
 
     constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo) Ownable(msg.sender) {
         valueOfYmmo = _valueOfYmmo;
@@ -42,7 +42,7 @@ contract Ymmo is Ownable {
         valueIncome = _valueIncome;
     }
 
-    function getIncome() external {
+    function getIncome() external payable {
         uint256 tokenBalance = tokenContract.balanceOf(msg.sender);
         require(tokenBalance > 0, "No YMmo tokens owned");
 
@@ -50,12 +50,16 @@ contract Ymmo is Ownable {
         uint256 userShare = (tokenBalance * 10 ** 18) / totalSupply;
         uint256 income = (userShare * valueIncome) / (10 ** 18);
 
-        payable(msg.sender).transfer(income);
+        (bool success, ) = msg.sender.call{value: income}("");
+        require(success, "Income transfer failed");
+
+        emit IncomeDistributed(msg.sender, income);
     }
 
-    function withdrawETH(uint256 amount) external onlyOwner {
+    function withdrawETH(address _to, uint256 amount) external payable onlyOwner {
         require(address(this).balance >= amount, "Insufficient balance");
-        payable(owner()).transfer(amount);
+        (bool success, ) = _to.call{value: amount}("");
+        require(success, "Withdraw failed");
     }
 
     receive() external payable {}
