@@ -2,7 +2,6 @@
 pragma solidity 0.8.24;
 
 import "./Ymmo.sol";
-import "../contants/index.js";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract YmmoFactory is Ownable {
@@ -12,8 +11,8 @@ contract YmmoFactory is Ownable {
 
     constructor() Ownable(msg.sender) {}
 
-    function createYmmo(uint128 _valueOfYmmo, uint64 _indexOfYmmo) external onlyOwner {
-        Ymmo ymmo = new Ymmo(_valueOfYmmo, _indexOfYmmo);
+    function createYmmo(uint128 _valueOfYmmo) external onlyOwner {
+        Ymmo ymmo = new Ymmo(_valueOfYmmo, uint64(listOfYmmo.length + 1));
         listOfYmmo.push(ymmo);
         emit NewContractYmmoDeploy(address(ymmo));
     }

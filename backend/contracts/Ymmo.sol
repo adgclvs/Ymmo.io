@@ -1,25 +1,28 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.24;
 
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
 import "./Token.sol";
 
-contract Ymmo is Ownable {
+contract Ymmo is Ownable, ReentrancyGuardUpgradeable {
     uint128 public valueOfYmmo;
     uint64 public indexOfYmmo;
     uint64 public valueIncome;
-    Token public tokenContract;
+    IERC20 public tokenContract;
 
     event TokensPurchased(address buyer, uint256 amount, uint256 ethSpent);
     event IncomeDistributed(address _address, uint256 _amount);
 
     constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo) Ownable(msg.sender) {
+        require(_valueOfYmmo > 0, "Value of Ymmo must be greater than 0");
         valueOfYmmo = _valueOfYmmo;
         indexOfYmmo = _indexOfYmmo;
         string memory name = "YMMO";
         string memory symbol = string(abi.encodePacked("YMMO_", Strings.toString(_indexOfYmmo)));
-        tokenContract = new Token(_valueOfYmmo, name, symbol);
+        tokenContract = IERC20(new Token(_valueOfYmmo, name, symbol));
     }
 
     function buyTokens() external payable {
@@ -38,11 +41,12 @@ contract Ymmo is Ownable {
         emit TokensPurchased(msg.sender, amountToBuy, msg.value);
     }
 
-    function setPercentageIncome(uint64 _valueIncome) external onlyOwner {
+    function setValueIncome(uint64 _valueIncome) external onlyOwner {
+        require(_valueIncome <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
         valueIncome = _valueIncome;
     }
 
-    function getIncome() external payable {
+    function getIncome() external payable nonReentrant {
         uint256 tokenBalance = tokenContract.balanceOf(msg.sender);
         require(tokenBalance > 0, "No YMmo tokens owned");
 
@@ -56,7 +60,7 @@ contract Ymmo is Ownable {
         emit IncomeDistributed(msg.sender, income);
     }
 
-    function withdrawETH(address _to, uint256 amount) external payable onlyOwner {
+    function withdrawETH(address _to, uint256 amount) external payable onlyOwner nonReentrant {
         require(address(this).balance >= amount, "Insufficient balance");
         (bool success, ) = _to.call{value: amount}("");
         require(success, "Withdraw failed");

@@ -5,16 +5,13 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  // Deploy YmmoFactory contract
-  const ymmoFactory = await hre.ethers.deployContract("YmmoFactory");
-  await ymmoFactory.waitForDeployment();
-  console.log("YmmoFactory deployed to:", ymmoFactory.target);
+  const Ymmo = await ethers.getContractFactory("Ymmo");
+  const priceFeedAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"; // Chainlink ETH/USD on Mainnet
 
-  // Optionally, create an Ymmo instance for initial testing
-  await ymmoFactory.createYmmo(1000, 1);
-  console.log("Ymmo instance created");
+  const ymmo = await Ymmo.deploy(1000000, 1, priceFeedAddress);
+  await ymmo.deployed();
 
-  console.log("Deployment completed successfully");
+  console.log("Ymmo deployed to:", ymmo.address);
 }
 
 main()
