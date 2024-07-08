@@ -20,7 +20,7 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable {
     IERC20 public tokenContract;
     IPyth public pyth;
 
-    bytes32 public constant ETH_PRICE_FEED_ID = keccak256(abi.encodePacked("JBu1AL4obBcCMqKBBxhpWCNUt136ijcuMZLFvTP7iWdB"));
+    bytes32 public constant ETH_PRICE_FEED_ID = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
 
     /**
      * @notice Event emitted when tokens are purchased.
@@ -61,9 +61,11 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable {
 
         // Get the current price of ETH from Pyth
         PythStructs.Price memory ethPrice = pyth.getPriceUnsafe(ETH_PRICE_FEED_ID);
-        int64 ethToUsd = ethPrice.price;
+        int256 ethToUsd = int256(ethPrice.price);
 
-        uint256 amountToBuy = (msg.value * uint256(uint64(ethToUsd))) / (1 ether);
+        require(ethToUsd > 0, "ETH price must be positive");
+
+        uint256 amountToBuy = (msg.value * uint256(ethToUsd)) / (1 ether);
 
         require(tokenContract.balanceOf(address(this)) >= amountToBuy, "Not enough tokens in the reserve");
 
