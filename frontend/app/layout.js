@@ -1,4 +1,5 @@
 import Layout from "@/components/shared/Layout";
+import { Toaster } from "@/components/ui/toaster";
 import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import RainbowKitAndWagmiProvider from "./RainbowKitAndWagmiProvider";
@@ -23,6 +24,7 @@ export default function RootLayout({ children }) {
         <RainbowKitAndWagmiProvider>
           <Layout>{children}</Layout>
         </RainbowKitAndWagmiProvider>
+        <Toaster />
       </body>
     </html>
   );

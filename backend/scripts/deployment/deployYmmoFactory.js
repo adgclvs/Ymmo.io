@@ -5,11 +5,11 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  const Ymmo = await ethers.getContractFactory("Ymmo");
+  const YmmoFactory = await ethers.getContractFactory("YmmoFactory");
 
-  const ymmo = await Ymmo.deploy(1000000, 1);
-  await ymmo.waitForDeployment();
-  console.log("Ymmo deployed to:", ymmo.target);
+  const ymmoFactory = await YmmoFactory.deploy();
+  await ymmoFactory.waitForDeployment();
+  console.log("YmmoFactory deployed to:", ymmoFactory.target);
 }
 
 main()

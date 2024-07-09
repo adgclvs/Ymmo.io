@@ -1,5 +1,33 @@
+"use client";
+
+import { ymmoFactoryContractAbi, ymmoFactoryContractAddress } from "@/constants/ymmoFactoryConstants";
+import { useAccount, useReadContract } from "wagmi";
+
+import Owner from "./Owner";
+import User from "./User";
+
 const Ymmo = () => {
-  return <div>Ymmo</div>;
+  const { address } = useAccount();
+
+  const {
+    data: ownerAddress,
+    error: ownerError,
+    isLoading: ownerLoading,
+  } = useReadContract({
+    address: ymmoFactoryContractAddress,
+    abi: ymmoFactoryContractAbi,
+    functionName: "owner",
+  });
+
+  if (ownerLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (ownerError) {
+    return <div>Error loading owner information.</div>;
+  }
+
+  return <div>{address === ownerAddress ? <Owner /> : <User />}</div>;
 };
 
 export default Ymmo;
