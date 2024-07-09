@@ -24,8 +24,8 @@ contract YmmoFactory is Ownable {
      * @notice Creates a new Ymmo contract.
      * @param _valueOfYmmo The initial value of the Ymmo contract.
      */
-    function createYmmo(uint128 _valueOfYmmo) external onlyOwner {
-        Ymmo ymmo = new Ymmo(_valueOfYmmo, uint64(listOfYmmo.length + 1));
+    function createYmmo(uint256 _valueOfYmmo) external onlyOwner {
+        Ymmo ymmo = new Ymmo(uint128(_valueOfYmmo), uint64(listOfYmmo.length + 1));
         listOfYmmo.push(ymmo);
         emit NewContractYmmoDeploy(address(ymmo));
     }

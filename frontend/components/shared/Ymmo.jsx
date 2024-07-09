@@ -1,7 +1,7 @@
 "use client";
 
-import { ymmoFactoryContractAbi, ymmoFactoryContractAddress } from "@/constants/ymmoFactoryConstants";
 import { useAccount, useReadContract } from "wagmi";
+import { contractAbi, contractAddress } from "../../constants/index";
 
 import Owner from "./Owner";
 import User from "./User";
@@ -14,8 +14,8 @@ const Ymmo = () => {
     error: ownerError,
     isLoading: ownerLoading,
   } = useReadContract({
-    address: ymmoFactoryContractAddress,
-    abi: ymmoFactoryContractAbi,
+    address: contractAddress,
+    abi: contractAbi,
     functionName: "owner",
   });
 

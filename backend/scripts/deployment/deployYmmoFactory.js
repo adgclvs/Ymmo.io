@@ -5,7 +5,7 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  const YmmoFactory = await ethers.getContractFactory("YmmoFactory");
+  const YmmoFactory = await hre.ethers.getContractFactory("YmmoFactory");
 
   const ymmoFactory = await YmmoFactory.deploy();
   await ymmoFactory.waitForDeployment();
