@@ -6,11 +6,9 @@ async function main() {
   console.log("Deploying contracts with the account:", deployer.address);
 
   const Ymmo = await ethers.getContractFactory("Ymmo");
-  const priceFeedAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"; // Chainlink ETH/USD on Mainnet
 
-  const ymmo = await Ymmo.deploy(1000000, 1, priceFeedAddress);
-  await ymmo.deployed();
-
+  const ymmo = await Ymmo.deploy(1000000, 1);
+  await ymmo.waitForDeployment();
   console.log("Ymmo deployed to:", ymmo.address);
 }
 

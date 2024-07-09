@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
-import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
+import "./DataConsumerV3.sol";
 import "./Token.sol";
 
 /**
@@ -13,14 +13,11 @@ import "./Token.sol";
  * @notice This contract allows for the creation, purchase, and income distribution of Ymmo tokens.
  * @dev Inherits from Ownable and ReentrancyGuardUpgradeable.
  */
-contract Ymmo is Ownable, ReentrancyGuardUpgradeable {
+contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     uint128 public valueOfYmmo;
     uint64 public indexOfYmmo;
     uint64 public valueIncome;
     IERC20 public tokenContract;
-    IPyth public pyth;
-
-    bytes32 public constant ETH_PRICE_FEED_ID = 0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace;
 
     /**
      * @notice Event emitted when tokens are purchased.
@@ -41,16 +38,14 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable {
      * @notice Constructor that initializes the contract with a value and index for Ymmo.
      * @param _valueOfYmmo The initial value of the Ymmo contract.
      * @param _indexOfYmmo The index of the Ymmo contract.
-     * @param _pyth The address of the Pyth contract.
      */
-    constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo, address _pyth) Ownable(msg.sender) {
+    constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo) Ownable(msg.sender) {
         require(_valueOfYmmo > 0, "Value of Ymmo must be greater than 0");
         valueOfYmmo = _valueOfYmmo;
         indexOfYmmo = _indexOfYmmo;
         string memory name = "YMMO";
         string memory symbol = string(abi.encodePacked("YMMO_", Strings.toString(_indexOfYmmo)));
         tokenContract = IERC20(new Token(_valueOfYmmo, name, symbol));
-        pyth = IPyth(_pyth);
     }
 
     /**
@@ -59,21 +54,26 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable {
     function buyTokens() external payable {
         require(msg.value > 0, "You need to send some ETH");
 
-        // Get the current price of ETH from Pyth
-        PythStructs.Price memory ethPrice = pyth.getPriceUnsafe(ETH_PRICE_FEED_ID);
-        int256 ethToUsd = int256(ethPrice.price);
+        // Get the current price of ETH from Chainlink
+        int256 ethPrice = getChainlinkDataFeedLatestAnswer();
+        require(ethPrice > 0, "Invalid price feed value");
 
-        require(ethToUsd > 0, "ETH price must be positive");
+        // Convert ETH price to USD with 18 decimals
+        uint256 ethPriceInUsd = uint256(ethPrice) * 1e8; // Chainlink returns price with 8 decimals
 
-        uint256 amountToBuy = (msg.value * uint256(ethToUsd)) / (1 ether);
+        // Calculate the amount of USD equivalent to the sent ETH
+        uint256 usdAmount = (msg.value * ethPriceInUsd) / 1e18;
 
-        require(tokenContract.balanceOf(address(this)) >= amountToBuy, "Not enough tokens in the reserve");
+        // Determine the amount of tokens to buy (assuming 1 token = 1 USD)
+        uint256 tokensToBuy = usdAmount;
+
+        require(tokenContract.balanceOf(address(this)) >= tokensToBuy, "Not enough tokens in the reserve");
 
         // Transfer YMmo tokens from the contract to the buyer
-        bool tokenSuccess = tokenContract.transfer(msg.sender, amountToBuy);
+        bool tokenSuccess = tokenContract.transfer(msg.sender, tokensToBuy);
         require(tokenSuccess, "Token transfer failed");
 
-        emit TokensPurchased(msg.sender, amountToBuy, msg.value);
+        emit TokensPurchased(msg.sender, tokensToBuy, msg.value);
     }
 
     /**
