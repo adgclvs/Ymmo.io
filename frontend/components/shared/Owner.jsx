@@ -26,7 +26,6 @@ const Owner = () => {
   const [APY, setAPY] = useState("");
 
   const [listAddressContract, setListAddressContract] = useState([]);
-  const [dataContracts, setDataContracts] = useState([]);
 
   const { data: hash, error, isPending, writeContract } = useWriteContract({});
 
@@ -38,36 +37,24 @@ const Owner = () => {
     hash,
   });
 
-  useEffect(() => {
-    if (isSuccess) {
-      setData();
-    }
-  }, [isSuccess]);
-
-  const setData = async () => {
-    const data = {
-      AddressContract: listAddressContract[listAddressContract.length - 1],
-      currentValueYmmo: currentValueYmmo,
-      IRLAddress: IRLAddress,
-      APY: APY,
-    };
-    console.log(data);
-    setDataContracts((prevData) => [...prevData, data]);
-
-    setCurrentValueYmmo("");
-    setIRLAddress("");
-    setAPY("");
-  };
-
   const createYmmo = async () => {
     writeContract({
       address: contractAddress,
       abi: contractAbi,
       functionName: "createYmmo",
       args: [currentValueYmmo],
+      overrides: {
+        gasLimit: 3000000,
+      },
     });
 
-    await getEvents();
+    getEvents();
+
+    if (isSuccess) {
+      setCurrentValueYmmo("");
+      setIRLAddress("");
+      setAPY("");
+    }
   };
 
   const getEvents = async () => {
@@ -84,7 +71,7 @@ const Owner = () => {
 
   useEffect(() => {
     getEvents();
-  }, [address]);
+  }, [address, isSuccess]);
 
   return (
     <div className="container mx-auto p-4">
@@ -164,13 +151,8 @@ const Owner = () => {
         <div className="col-span-2">
           <p className="text-xl font-semibold text-gray-800 mb-4">The list of contracts</p>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {dataContracts.map((contract, index) => (
-              <OneYmmo
-                key={index}
-                addressContract={contract.AddressContract}
-                IRLAddress={contract.IRLAddress}
-                APY={contract.APY}
-              />
+            {listAddressContract.map((contract, index) => (
+              <OneYmmo key={index} addressContract={contract} IRLAddress="12 Rue de France" APY="7%" />
             ))}
           </div>
         </div>

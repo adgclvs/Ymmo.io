@@ -17,6 +17,7 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     uint128 public valueOfYmmo;
     uint64 public indexOfYmmo;
     uint64 public valueIncome;
+
     IERC20 public tokenContract;
 
     /**
@@ -35,6 +36,12 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     event IncomeDistributed(address _address, uint256 _amount);
 
     /**
+     * @notice Event emitted when value income is set.
+     * @param amount The amount of ETH set as income.
+     */
+    event ValueIncomeSet(uint256 amount);
+
+    /**
      * @notice Constructor that initializes the contract with a value and index for Ymmo.
      * @param _valueOfYmmo The initial value of the Ymmo contract.
      * @param _indexOfYmmo The index of the Ymmo contract.
@@ -46,6 +53,17 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         string memory name = "YMMO";
         string memory symbol = string(abi.encodePacked("YMMO_", Strings.toString(_indexOfYmmo)));
         tokenContract = IERC20(new Token(_valueOfYmmo, name, symbol));
+    }
+
+    /**
+     * @notice Sets the value of income that can be distributed by sending ETH.
+     */
+    function setValueIncome() external payable onlyOwner {
+        require(msg.value > 0, "You need to send some ETH");
+        require(msg.value <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
+
+        valueIncome = uint64(msg.value);
+        emit ValueIncomeSet(msg.value);
     }
 
     /**
@@ -74,15 +92,6 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         require(tokenSuccess, "Token transfer failed");
 
         emit TokensPurchased(msg.sender, tokensToBuy, msg.value);
-    }
-
-    /**
-     * @notice Sets the value of income that can be distributed.
-     * @param _valueIncome The value of the income to set.
-     */
-    function setValueIncome(uint64 _valueIncome) external onlyOwner {
-        require(_valueIncome <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
-        valueIncome = _valueIncome;
     }
 
     /**
