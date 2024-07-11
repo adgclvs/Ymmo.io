@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { parseEther } from "viem";
-import { useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { contractAddress, ymmoContractAbi } from "../../constants/index";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -11,7 +11,23 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   const [indexOfYmmo, setIndexOfYmmo] = useState(null);
   const [isClicked, setIsClicked] = useState(false);
   const [valueIncome, setValueIncome] = useState(null);
-  const [ethValueIncome, setEthValueIncome] = useState(null); // Store the ETH value
+
+  const [ethPriceInUSD, setEthPriceInUSD] = useState(null);
+
+  const { data: ethPrice } = useReadContract({
+    address: addressContract,
+    abi: ymmoContractAbi,
+    functionName: "getChainlinkDataFeedLatestAnswer",
+  });
+
+  console.log(ethPrice);
+
+  useEffect(() => {
+    if (ethPrice) {
+      const ethPriceInUSD = Number(ethPrice) / 10 ** 8;
+      setEthPriceInUSD(ethPriceInUSD); // Price of 1 ETHER in USD
+    }
+  }, [ethPrice]);
 
   const {
     data: valueData,
@@ -33,6 +49,14 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     functionName: "indexOfYmmo",
   });
 
+  const {
+    data: balanceData,
+    error: balanceError,
+    isLoading: balanceIsLoading,
+  } = useBalance({
+    address: addressContract,
+  });
+
   const { data: hash, error, isPending, writeContract } = useWriteContract({});
 
   const {
@@ -47,33 +71,24 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     setIsClicked(!isClicked);
   };
 
-  const fetchConversionRate = async () => {
-    try {
-      const response = await axios.get("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=eur");
-      return response.data.ethereum.eur;
-    } catch (error) {
-      console.error("Error fetching conversion rate:", error);
-      return null;
-    }
-  };
-
   const sendIncome = async () => {
-    const conversionRate = await fetchConversionRate();
-    if (conversionRate) {
-      const ethValue = valueIncome / conversionRate;
-      console.log(ethValue);
-      setEthValueIncome(ethValue);
+    let price;
+    try {
+      if (ethPriceInUSD) {
+        price = (valueIncome + 0.01 * valueIncome) / ethPriceInUSD;
+        price = parseEther(price.toString());
+      }
+      console.log(price);
       writeContract({
         address: contractAddress,
         abi: ymmoContractAbi,
         functionName: "setValueIncome",
-        overrides: {
-          value: parseEther(ethValue.toString()), // Convertit la valeur en wei
-        },
+        args: [valueIncome / 10],
+        value: price,
       });
-      setValueIncome(null);
-    } else {
-      console.error("Failed to convert valueIncome to ETH.");
+      console.log("oups");
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -89,9 +104,10 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     }
   }, [indexData]);
 
-  if (valueIsLoading || indexIsLoading || isConfirming) return <div>Loading...</div>;
+  if (valueIsLoading || indexIsLoading || balanceIsLoading || isConfirming) return <div>Loading...</div>;
   if (valueError) return <div>Error: {valueError.message}</div>;
   if (indexError) return <div>Error: {indexError.message}</div>;
+  if (balanceError) return <div>Error: {balanceError.message}</div>;
   if (errorConfirmation) return <div>Error: {errorConfirmation.message}</div>;
 
   return (
@@ -110,6 +126,10 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
           </p>
           <p className="text-gray-600">
             APY: <span className="font-medium">{APY}</span>
+          </p>
+          <p className="text-gray-600">
+            Contract Balance:{" "}
+            <span className="font-medium">{balanceData ? balanceData.formatted : "Loading..."} ETH</span>
           </p>
         </div>
       </div>

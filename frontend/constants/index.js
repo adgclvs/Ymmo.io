@@ -1,4 +1,4 @@
-export const contractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+export const contractAddress = "0xd2Af079fAaa3E96449ecbCa72fdbD599a1B20057";
 export const contractAbi = [
   {
     inputs: [],
@@ -308,7 +308,13 @@ export const ymmoContractAbi = [
     type: "function",
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256",
+      },
+    ],
     name: "setValueIncome",
     outputs: [],
     stateMutability: "payable",

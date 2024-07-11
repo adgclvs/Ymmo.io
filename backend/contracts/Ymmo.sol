@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.24;
 
+import "hardhat/console.sol";
+
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -14,6 +16,8 @@ import "./Token.sol";
  * @dev Inherits from Ownable and ReentrancyGuardUpgradeable.
  */
 contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
+    uint256 private constant PRICE_PER_TOKEN = 1;
+
     uint128 public valueOfYmmo;
     uint64 public indexOfYmmo;
     uint64 public valueIncome;
@@ -58,12 +62,27 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     /**
      * @notice Sets the value of income that can be distributed by sending ETH.
      */
-    function setValueIncome() external payable onlyOwner {
-        require(msg.value > 0, "You need to send some ETH");
-        require(msg.value <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
+    function setValueIncome(uint256 _amount) external payable onlyOwner {
+        require(_amount > 0, "You need to send some ETH");
+        require(_amount <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
 
-        valueIncome = uint64(msg.value);
-        emit ValueIncomeSet(msg.value);
+        int256 ethInDollars = getChainlinkDataFeedLatestAnswer();
+        require(ethInDollars > 0, "Invalid price feed value");
+
+        uint256 ethInDollarsUint = uint256(ethInDollars / 1e8);
+
+        uint256 expectedPriceInWei = (PRICE_PER_TOKEN * 1 ether * _amount) / ethInDollarsUint; // Convert to wei
+        console.log("ethInDollars:", ethInDollarsUint);
+        console.log("expectedPriceInWei:", expectedPriceInWei);
+        console.log("value provided:", msg.value);
+
+        require(msg.value >= expectedPriceInWei, "Not enough funds provided");
+
+        (bool success, ) = address(this).call{value: _amount}("");
+        require(success, "Withdraw failed");
+
+        valueIncome = uint64(_amount);
+        emit ValueIncomeSet(_amount);
     }
 
     /**

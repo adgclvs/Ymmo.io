@@ -23,12 +23,12 @@ contract DataConsumerV3 {
     AggregatorV3Interface internal dataFeed;
 
     /**
-     * Network: Ethereum Mainnet
+     * Network: Sepolia
      * Aggregator: ETH/USD
-     * Address: 0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419
+     * Address: 0x694AA1769357215DE4FAC081bf1f309aDC325306
      */
     constructor() {
-        dataFeed = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
+        dataFeed = AggregatorV3Interface(0x694AA1769357215DE4FAC081bf1f309aDC325306);
     }
 
     /**
