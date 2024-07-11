@@ -49,8 +49,9 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
      * @notice Constructor that initializes the contract with a value and index for Ymmo.
      * @param _valueOfYmmo The initial value of the Ymmo contract.
      * @param _indexOfYmmo The index of the Ymmo contract.
+     * @param _owner the owner.
      */
-    constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo) Ownable(msg.sender) {
+    constructor(uint128 _valueOfYmmo, uint64 _indexOfYmmo, address _owner) Ownable(_owner) {
         require(_valueOfYmmo > 0, "Value of Ymmo must be greater than 0");
         valueOfYmmo = _valueOfYmmo;
         indexOfYmmo = _indexOfYmmo;
@@ -62,27 +63,20 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     /**
      * @notice Sets the value of income that can be distributed by sending ETH.
      */
-    function setValueIncome(uint256 _amount) external payable onlyOwner {
-        require(_amount > 0, "You need to send some ETH");
-        require(_amount <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
+    function setValueIncome(address payable _to) external payable onlyOwner {
+        // require(msg.value > 0, "You need to send some ETH");
+        // require(msg.value <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
 
-        int256 ethInDollars = getChainlinkDataFeedLatestAnswer();
-        require(ethInDollars > 0, "Invalid price feed value");
-
-        uint256 ethInDollarsUint = uint256(ethInDollars / 1e8);
-
-        uint256 expectedPriceInWei = (PRICE_PER_TOKEN * 1 ether * _amount) / ethInDollarsUint; // Convert to wei
-        console.log("ethInDollars:", ethInDollarsUint);
-        console.log("expectedPriceInWei:", expectedPriceInWei);
-        console.log("value provided:", msg.value);
-
-        require(msg.value >= expectedPriceInWei, "Not enough funds provided");
-
-        (bool success, ) = address(this).call{value: _amount}("");
+        (bool success, ) = _to.call{value: msg.value}("");
         require(success, "Withdraw failed");
 
-        valueIncome = uint64(_amount);
-        emit ValueIncomeSet(_amount);
+        // valueIncome = uint64(msg.value);
+        // emit ValueIncomeSet(msg.value);
+    }
+
+    function send_(address payable _to) external payable {
+        (bool success, ) = _to.call{value: msg.value}("");
+        require(success, "Withdraw failed");
     }
 
     /**

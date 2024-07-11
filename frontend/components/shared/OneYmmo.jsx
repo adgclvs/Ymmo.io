@@ -1,18 +1,25 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { parseEther } from "viem";
-import { useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
+import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
 import { contractAddress, ymmoContractAbi } from "../../constants/index";
 import { Button } from "../ui/button";
+
 import { Input } from "../ui/input";
 
 const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
+  const { address } = useAccount();
+
   const [valueOfYmmo, setValueOfYmmo] = useState(null);
   const [indexOfYmmo, setIndexOfYmmo] = useState(null);
   const [isClicked, setIsClicked] = useState(false);
   const [valueIncome, setValueIncome] = useState(null);
 
+  const [addressToken, setAddressToken] = useState(null);
+
   const [ethPriceInUSD, setEthPriceInUSD] = useState(null);
+
+  //------------CHAINLINK----------------------------------
 
   const { data: ethPrice } = useReadContract({
     address: addressContract,
@@ -20,14 +27,14 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     functionName: "getChainlinkDataFeedLatestAnswer",
   });
 
-  console.log(ethPrice);
-
   useEffect(() => {
     if (ethPrice) {
       const ethPriceInUSD = Number(ethPrice) / 10 ** 8;
       setEthPriceInUSD(ethPriceInUSD); // Price of 1 ETHER in USD
     }
   }, [ethPrice]);
+
+  //-------------------DATA---------------------------
 
   const {
     data: valueData,
@@ -57,7 +64,40 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     address: addressContract,
   });
 
+  const {
+    data: contractAdd,
+    error: errorContractAdd,
+    isLoading: isPendingContractAdd,
+  } = useReadContract({
+    address: addressContract,
+    abi: ymmoContractAbi,
+    functionName: "tokenContract",
+  });
+
+  //---------------------WRITE CONTRACT ----------------------------------
+
   const { data: hash, error, isPending, writeContract } = useWriteContract({});
+
+  const sendIncome = async () => {
+    let price;
+    try {
+      if (ethPriceInUSD) {
+        price = (valueIncome + 0.01 * valueIncome) / ethPriceInUSD;
+        price = parseEther(price.toString());
+      }
+      let test = "0.01";
+      writeContract({
+        address: addressContract,
+        abi: ymmoContractAbi,
+        functionName: "setValueIncome",
+        args: [addressContract],
+        value: parseEther(test.toString()),
+        account: address,
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const {
     isLoading: isConfirming,
@@ -67,29 +107,31 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     hash,
   });
 
-  const handleClick = () => {
-    setIsClicked(!isClicked);
+  //-------------------------------------------------------------------
+
+  const {
+    data: buyHash,
+    error: buyError,
+    isPending: buyIsPending,
+    writeContract: buyWriteContract,
+  } = useWriteContract({});
+
+  const buyToken = async () => {
+    buyWriteContract({
+      address: addressContract,
+      abi: ymmoContractAbi,
+      functionName: "setValueIncome",
+      args: [addressContract],
+      value: parseEther(indexOfYmmo.toString()),
+    });
   };
 
-  const sendIncome = async () => {
-    let price;
-    try {
-      if (ethPriceInUSD) {
-        price = (valueIncome + 0.01 * valueIncome) / ethPriceInUSD;
-        price = parseEther(price.toString());
-      }
-      console.log(price);
-      writeContract({
-        address: contractAddress,
-        abi: ymmoContractAbi,
-        functionName: "setValueIncome",
-        args: [valueIncome / 10],
-        value: price,
-      });
-      console.log("oups");
-    } catch (error) {
-      console.log(error);
-    }
+  const getDataTokenContract = async () => {};
+
+  //------------------------------------------------------------------
+
+  const handleClick = () => {
+    setIsClicked(!isClicked);
   };
 
   useEffect(() => {
@@ -103,6 +145,20 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
       setIndexOfYmmo(indexData.toString());
     }
   }, [indexData]);
+
+  useEffect(() => {
+    if (balanceData) {
+      setIndexOfYmmo(balanceData.toString());
+    }
+  }, [balanceData]);
+
+  useEffect(() => {
+    if (contractAdd) {
+      setIndexOfYmmo(contractAdd.toString());
+    }
+  }, [contractAdd]);
+
+  console.log(contractAdd);
 
   if (valueIsLoading || indexIsLoading || balanceIsLoading || isConfirming) return <div>Loading...</div>;
   if (valueError) return <div>Error: {valueError.message}</div>;

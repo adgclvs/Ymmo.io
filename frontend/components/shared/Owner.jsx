@@ -61,7 +61,7 @@ const Owner = () => {
     const proposalChangeLog = await publicClient.getLogs({
       address: contractAddress,
       event: parseAbiItem("event NewContractYmmoDeploy(address contractAddress)"),
-      fromBlock: 6287820n,
+      fromBlock: 0n,
       toBlock: "latest",
     });
 

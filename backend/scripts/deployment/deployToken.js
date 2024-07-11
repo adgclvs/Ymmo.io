@@ -5,11 +5,11 @@ async function main() {
 
   console.log("Deploying contracts with the account:", deployer.address);
 
-  const Ymmo = await hre.ethers.getContractFactory("Ymmo");
+  const Token = await hre.ethers.getContractFactory("Token");
 
-  const ymmo = await Ymmo.deploy(1000000, 1, deployer.address);
-  await ymmo.waitForDeployment();
-  console.log("Ymmo deployed to:", ymmo.target);
+  const token = await Token.deploy(100, "YMMO", "YMMO");
+  await token.waitForDeployment();
+  console.log("Token deployed to:", token.target);
 }
 
 main()
