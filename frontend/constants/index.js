@@ -1,6 +1,6 @@
 // 0xd2Af079fAaa3E96449ecbCa72fdbD599a1B20057
 
-export const contractAddress = "0x610178dA211FEF7D417bC0e6FeD39F05609AD788";
+export const contractAddress = "0x851356ae760d987E095750cCeb3bC6014560891C";
 export const contractAbi = [
   {
     inputs: [],
@@ -255,7 +255,13 @@ export const ymmoContractAbi = [
     type: "event",
   },
   {
-    inputs: [],
+    inputs: [
+      {
+        internalType: "address payable",
+        name: "_to",
+        type: "address",
+      },
+    ],
     name: "buyTokens",
     outputs: [],
     stateMutability: "payable",

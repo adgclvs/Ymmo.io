@@ -2,9 +2,8 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { parseEther } from "viem";
 import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
-import { contractAddress, ymmoContractAbi } from "../../constants/index";
+import { contractAddress, tokenContractAbi, ymmoContractAbi } from "../../constants/index";
 import { Button } from "../ui/button";
-
 import { Input } from "../ui/input";
 
 const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
@@ -14,8 +13,12 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   const [indexOfYmmo, setIndexOfYmmo] = useState(null);
   const [isClicked, setIsClicked] = useState(false);
   const [valueIncome, setValueIncome] = useState(null);
+  const [amountToBuy, setAmountToBuy] = useState(null);
 
   const [addressToken, setAddressToken] = useState(null);
+  const [balanceInEthContract, setBalanceInEthContract] = useState(null);
+  const [balanceInYmmoContract, setBalanceInYmmoContract] = useState(null);
+  const [balanceInYmmoUser, setBalanceInYmmoUser] = useState(null);
 
   const [ethPriceInUSD, setEthPriceInUSD] = useState(null);
 
@@ -37,6 +40,14 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   //-------------------DATA---------------------------
 
   const {
+    data: balanceData,
+    error: balanceError,
+    isLoading: balanceIsLoading,
+  } = useBalance({
+    address: addressContract,
+  });
+
+  const {
     data: valueData,
     error: valueError,
     isLoading: valueIsLoading,
@@ -44,6 +55,16 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     address: addressContract,
     abi: ymmoContractAbi,
     functionName: "valueOfYmmo",
+  });
+
+  const {
+    data: owner,
+    error: errorOwner,
+    isLoading: isLoadingOwner,
+  } = useReadContract({
+    address: addressContract,
+    abi: ymmoContractAbi,
+    functionName: "owner",
   });
 
   const {
@@ -57,14 +78,6 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   });
 
   const {
-    data: balanceData,
-    error: balanceError,
-    isLoading: balanceIsLoading,
-  } = useBalance({
-    address: addressContract,
-  });
-
-  const {
     data: contractAdd,
     error: errorContractAdd,
     isLoading: isPendingContractAdd,
@@ -72,6 +85,28 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     address: addressContract,
     abi: ymmoContractAbi,
     functionName: "tokenContract",
+  });
+
+  const {
+    data: contractBalance,
+    error: errorContractBalance,
+    isLoading: isPendingContractBalance,
+  } = useReadContract({
+    address: contractAdd,
+    abi: tokenContractAbi,
+    functionName: "balanceOf",
+    args: [addressContract],
+  });
+
+  const {
+    data: userBalance,
+    error: errorUserBalance,
+    isLoading: isPendingUserBalance,
+  } = useReadContract({
+    address: contractAdd,
+    abi: tokenContractAbi,
+    functionName: "balanceOf",
+    args: [address],
   });
 
   //---------------------WRITE CONTRACT ----------------------------------
@@ -117,16 +152,33 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   } = useWriteContract({});
 
   const buyToken = async () => {
-    buyWriteContract({
-      address: addressContract,
-      abi: ymmoContractAbi,
-      functionName: "setValueIncome",
-      args: [addressContract],
-      value: parseEther(indexOfYmmo.toString()),
-    });
+    let price;
+    try {
+      if (ethPriceInUSD) {
+        price = (amountToBuy * amountToBuy) / ethPriceInUSD;
+        price = parseEther(price.toString());
+      }
+      let test = "1.1";
+      buyWriteContract({
+        address: addressContract,
+        abi: ymmoContractAbi,
+        functionName: "buyTokens",
+        args: [addressContract],
+        value: parseEther(test.toString()),
+        account: address,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
-  const getDataTokenContract = async () => {};
+  const {
+    isLoading: buyIsConfirming,
+    isSuccess: buyIsSuccess,
+    error: buyErrorConfirmation,
+  } = useWaitForTransactionReceipt({
+    buyHash,
+  });
 
   //------------------------------------------------------------------
 
@@ -148,22 +200,34 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
 
   useEffect(() => {
     if (balanceData) {
-      setIndexOfYmmo(balanceData.toString());
+      setBalanceInEthContract(balanceData.formatted.toString());
     }
   }, [balanceData]);
 
   useEffect(() => {
     if (contractAdd) {
-      setIndexOfYmmo(contractAdd.toString());
+      setAddressToken(contractAdd.toString());
     }
   }, [contractAdd]);
 
-  console.log(contractAdd);
+  useEffect(() => {
+    if (contractBalance) {
+      setBalanceInYmmoContract(contractBalance.toString());
+    }
+  }, [contractBalance]);
 
-  if (valueIsLoading || indexIsLoading || balanceIsLoading || isConfirming) return <div>Loading...</div>;
+  useEffect(() => {
+    if (userBalance) {
+      setBalanceInYmmoUser(userBalance.toString());
+    }
+  }, [userBalance]);
+
+  if (valueIsLoading || indexIsLoading || balanceIsLoading || isLoadingOwner || isConfirming)
+    return <div>Loading...</div>;
   if (valueError) return <div>Error: {valueError.message}</div>;
   if (indexError) return <div>Error: {indexError.message}</div>;
   if (balanceError) return <div>Error: {balanceError.message}</div>;
+  if (errorOwner) return <div>Error: {errorOwner.message}</div>;
   if (errorConfirmation) return <div>Error: {errorConfirmation.message}</div>;
 
   return (
@@ -185,26 +249,50 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
           </p>
           <p className="text-gray-600">
             Contract Balance:{" "}
-            <span className="font-medium">{balanceData ? balanceData.formatted : "Loading..."} ETH</span>
+            <span className="font-medium">{balanceInEthContract ? balanceInEthContract : "Loading..."} ETH</span>
+          </p>
+          <p className="text-gray-600">
+            Balance of token:{" "}
+            <span className="font-medium">{balanceInYmmoContract ? balanceInYmmoContract : "Loading..."} YMMO</span>
+          </p>
+          <p className="text-gray-600">
+            Your balance on this YMMO:{" "}
+            <span className="font-medium">{balanceInYmmoUser ? balanceInYmmoUser : "0"} YMMO</span>
           </p>
         </div>
       </div>
-      {isClicked && (
-        <div className="mt-4 p-2 bg-gray-100 rounded-lg">
-          <Input
-            className="w-full p-2 border border-gray-300 rounded mt-2"
-            placeholder="Value Income (€)"
-            onChange={(e) => setValueIncome(e.target.value)}
-          />
-          <Button
-            className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
-            onClick={sendIncome}
-            disabled={isPending}
-          >
-            {isPending ? "Submitting..." : "Set Income"}
-          </Button>
-        </div>
-      )}
+      {isClicked &&
+        (address === owner ? (
+          <div className="mt-4 p-2 bg-gray-100 rounded-lg">
+            <Input
+              className="w-full p-2 border border-gray-300 rounded mt-2"
+              placeholder="Value Income (€)"
+              onChange={(e) => setValueIncome(e.target.value)}
+            />
+            <Button
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
+              onClick={sendIncome}
+              disabled={isPending}
+            >
+              {isPending ? "Submitting..." : "Set Income"}
+            </Button>
+          </div>
+        ) : (
+          <div className="mt-4 p-2 bg-gray-100 rounded-lg">
+            <Input
+              className="w-full p-2 border border-gray-300 rounded mt-2"
+              placeholder="Amount To Buy"
+              onChange={(e) => setAmountToBuy(e.target.value)}
+            />
+            <Button
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
+              onClick={buyToken}
+              disabled={isPending}
+            >
+              {isPending ? "Buying..." : "Buy"}
+            </Button>
+          </div>
+        ))}
     </div>
   );
 };

@@ -82,21 +82,20 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     /**
      * @notice Allows users to buy Ymmo tokens using ETH.
      */
-    function buyTokens() external payable {
+    function buyTokens(address payable _to) external payable {
         require(msg.value > 0, "You need to send some ETH");
 
-        // Get the current price of ETH from Chainlink
-        int256 ethPrice = getChainlinkDataFeedLatestAnswer();
-        require(ethPrice > 0, "Invalid price feed value");
+        (bool success, ) = _to.call{value: msg.value}("");
+        require(success, "Withdraw failed");
 
-        // Convert ETH price to USD with 18 decimals
-        uint256 ethPriceInUsd = uint256(ethPrice) * 1e8; // Chainlink returns price with 8 decimals
+        // int256 ethInDollars = getChainlinkDataFeedLatestAnswer();
+        // require(ethInDollars > 0, "Invalid price feed value");
 
-        // Calculate the amount of USD equivalent to the sent ETH
-        uint256 usdAmount = (msg.value * ethPriceInUsd) / 1e18;
+        // uint256 ethInDollarsUint = uint256(ethInDollars / 1e8);
 
-        // Determine the amount of tokens to buy (assuming 1 token = 1 USD)
-        uint256 tokensToBuy = usdAmount;
+        uint256 ethInDollarsUint = 3000;
+
+        uint256 tokensToBuy = (ethInDollarsUint * msg.value) / 1e18;
 
         require(tokenContract.balanceOf(address(this)) >= tokensToBuy, "Not enough tokens in the reserve");
 
