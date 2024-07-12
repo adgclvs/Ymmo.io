@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @dev Inherits from Ownable to manage ownership of the contract.
  */
 contract YmmoFactory is Ownable {
-    uint256 internal currentIndex;
+    uint256 public currentIndex;
     /**
      * @notice Event emitted when a new Ymmo contract is deployed.
      * @param contractAddress The address of the newly deployed Ymmo contract.
