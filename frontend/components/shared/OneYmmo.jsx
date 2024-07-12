@@ -1,3 +1,5 @@
+import { ToastAction } from "@/components/ui/toast";
+import { useToast } from "@/components/ui/use-toast";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { parseEther } from "viem";
@@ -8,6 +10,7 @@ import { Input } from "../ui/input";
 
 const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   const { address } = useAccount();
+  const { toast } = useToast();
 
   const [valueOfYmmo, setValueOfYmmo] = useState(null);
   const [indexOfYmmo, setIndexOfYmmo] = useState(null);
@@ -133,11 +136,14 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
         account: address,
       });
     } catch (error) {
-      console.log(error);
+      toast({
+        title: error.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
     }
   };
-
-  console.log(error);
 
   const {
     isLoading: isConfirming,
@@ -146,6 +152,25 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   } = useWaitForTransactionReceipt({
     hash,
   });
+
+  useEffect(() => {
+    if (errorConfirmation) {
+      toast({
+        title: errorConfirmation.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+    if (error) {
+      toast({
+        title: error.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+  }, [errorConfirmation, error]);
 
   //-------------------------------------------------------------------
 
@@ -173,7 +198,12 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
         account: address,
       });
     } catch (error) {
-      console.log(error);
+      toast({
+        title: error.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
     }
   };
 
@@ -185,6 +215,25 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     buyHash,
   });
 
+  useEffect(() => {
+    if (buyErrorConfirmation) {
+      toast({
+        title: buyErrorConfirmation.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+    if (buyError) {
+      toast({
+        title: buyError.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+  }, [buyErrorConfirmation, buyError]);
+
   //------------------------------------------------------------------
 
   const {
@@ -195,12 +244,21 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   } = useWriteContract({});
 
   const getIncome = async () => {
-    getIncomeWriteContract({
-      address: addressContract,
-      abi: ymmoContractAbi,
-      functionName: "getIncome",
-      account: address,
-    });
+    try {
+      getIncomeWriteContract({
+        address: addressContract,
+        abi: ymmoContractAbi,
+        functionName: "getIncome",
+        account: address,
+      });
+    } catch (error) {
+      toast({
+        title: error.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
   };
 
   const {
@@ -208,10 +266,27 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     isSuccess: getIncomeIsSuccess,
     error: getIncomeErrorConfirmation,
   } = useWaitForTransactionReceipt({
-    buyHash,
+    getIncomeHash,
   });
 
-  console.log(getIncomeError);
+  useEffect(() => {
+    if (getIncomeErrorConfirmation) {
+      toast({
+        title: getIncomeErrorConfirmation.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+    if (getIncomeError) {
+      toast({
+        title: getIncomeError.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+  }, [getIncomeErrorConfirmation, getIncomeError]);
 
   //------------------------------------------------------------------
 
@@ -223,12 +298,21 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   } = useWriteContract({});
 
   const changeIncome = async () => {
-    changeIncomeWriteContract({
-      address: addressContract,
-      abi: ymmoContractAbi,
-      functionName: "changeAvailableIncome",
-      account: address,
-    });
+    try {
+      changeIncomeWriteContract({
+        address: addressContract,
+        abi: ymmoContractAbi,
+        functionName: "changeAvailableIncome",
+        account: address,
+      });
+    } catch (error) {
+      toast({
+        title: error.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
   };
 
   const {
@@ -238,6 +322,25 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   } = useWaitForTransactionReceipt({
     changeIncomeHash,
   });
+
+  useEffect(() => {
+    if (changeIncomeErrorConfirmation) {
+      toast({
+        title: changeIncomeErrorConfirmation.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+    if (changeIncomeError) {
+      toast({
+        title: changeIncomeError.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+  }, [changeIncomeErrorConfirmation, changeIncomeError]);
 
   //------------------------------------------------------------------
 
@@ -249,11 +352,20 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   } = useWriteContract({});
 
   const resetRetrieveState = async () => {
-    resetRetrieveWriteContract({
-      address: addressContract,
-      abi: ymmoContractAbi,
-      functionName: "resetRetrieveState",
-    });
+    try {
+      resetRetrieveWriteContract({
+        address: addressContract,
+        abi: ymmoContractAbi,
+        functionName: "resetRetrieveState",
+      });
+    } catch (error) {
+      toast({
+        title: error.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
   };
 
   const {
@@ -261,8 +373,27 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     isSuccess: resetRetrieveIsSuccess,
     error: resetRetrieveErrorConfirmation,
   } = useWaitForTransactionReceipt({
-    changeIncomeHash,
+    resetRetrieveHash,
   });
+
+  useEffect(() => {
+    if (resetRetrieveErrorConfirmation) {
+      toast({
+        title: resetRetrieveErrorConfirmation.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+    if (resetRetrieveError) {
+      toast({
+        title: resetRetrieveError.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+  }, [resetRetrieveErrorConfirmation, resetRetrieveError]);
 
   //------------------------------------------------------------------
 
@@ -288,7 +419,12 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
         args: [addressWithdraw, parseEther(test.toString())],
       });
     } catch (error) {
-      console.log(error);
+      toast({
+        title: error.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
     }
   };
 
@@ -299,6 +435,25 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   } = useWaitForTransactionReceipt({
     changeIncomeHash,
   });
+
+  useEffect(() => {
+    if (withdrawErrorConfirmation) {
+      toast({
+        title: withdrawErrorConfirmation.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+    if (withdrawError) {
+      toast({
+        title: withdrawError.message,
+        duration: 3000,
+        variant: "destructive",
+        action: <ToastAction altText="Close">Close</ToastAction>,
+      });
+    }
+  }, [withdrawErrorConfirmation, withdrawError]);
 
   //------------------------------------------------------------------
 
@@ -401,14 +556,14 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
               onClick={changeIncome}
               disabled={changeIncomeIsPending}
             >
-              {isPending ? "Submitting..." : "Change available status"}
+              {changeIncomeIsPending ? "Submitting..." : "Change available status"}
             </Button>
             <Button
               className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
               onClick={resetRetrieveState}
               disabled={resetRetrieveIsPending}
             >
-              {isPending ? "Submitting..." : "Authorize retreive"}
+              {resetRetrieveIsPending ? "Submitting..." : "Authorize retreive"}
             </Button>
             <Input
               className="w-full p-2 border border-gray-300 rounded mt-2"
@@ -425,7 +580,7 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
               onClick={withdraw}
               disabled={withdrawIsPending}
             >
-              {isPending ? "withdraw..." : "Withdraw"}
+              {withdrawIsPending ? "withdraw..." : "Withdraw"}
             </Button>
           </div>
         ) : (
@@ -438,14 +593,14 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
             <Button
               className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
               onClick={buyToken}
-              disabled={isPending}
+              disabled={buyIsPending}
             >
               {isPending ? "Buying..." : "Buy"}
             </Button>
             <Button
               className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
               onClick={getIncome}
-              disabled={isPending}
+              disabled={getIncomeIsPending}
             >
               {isPending ? "Sending..." : "Retrieve your income !"}
             </Button>

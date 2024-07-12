@@ -10,8 +10,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * @dev Inherits from Ownable to manage ownership of the contract.
  */
 contract YmmoFactory is Ownable {
-    Ymmo[] private listOfYmmo;
-
+    uint256 internal currentIndex;
     /**
      * @notice Event emitted when a new Ymmo contract is deployed.
      * @param contractAddress The address of the newly deployed Ymmo contract.
@@ -25,16 +24,8 @@ contract YmmoFactory is Ownable {
      * @param _valueOfYmmo The initial value of the Ymmo contract.
      */
     function createYmmo(uint256 _valueOfYmmo) external onlyOwner {
-        Ymmo ymmo = new Ymmo(uint128(_valueOfYmmo), uint64(listOfYmmo.length + 1), msg.sender);
-        listOfYmmo.push(ymmo);
+        currentIndex++;
+        Ymmo ymmo = new Ymmo(uint128(_valueOfYmmo), uint64(currentIndex), msg.sender);
         emit NewContractYmmoDeploy(address(ymmo));
-    }
-
-    /**
-     * @notice Returns the list of deployed Ymmo contracts.
-     * @return An array of Ymmo contract addresses.
-     */
-    function getListOfYmmo() external view returns (Ymmo[] memory) {
-        return listOfYmmo;
     }
 }
