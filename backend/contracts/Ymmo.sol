@@ -22,6 +22,12 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     uint64 public indexOfYmmo;
     uint64 public valueIncome;
 
+    bool public availableIncome;
+
+    uint256 public retrieveCounter;
+
+    mapping(address => uint256) public lastRetrieve;
+
     IERC20 public tokenContract;
 
     /**
@@ -55,23 +61,29 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         require(_valueOfYmmo > 0, "Value of Ymmo must be greater than 0");
         valueOfYmmo = _valueOfYmmo;
         indexOfYmmo = _indexOfYmmo;
+        availableIncome = true;
         string memory name = "YMMO";
         string memory symbol = string(abi.encodePacked("YMMO_", Strings.toString(_indexOfYmmo)));
         tokenContract = IERC20(new Token(_valueOfYmmo, name, symbol));
+    }
+
+    function changeAvailableIncome() external onlyOwner {
+        availableIncome = !availableIncome;
     }
 
     /**
      * @notice Sets the value of income that can be distributed by sending ETH.
      */
     function setValueIncome(address payable _to) external payable onlyOwner {
-        // require(msg.value > 0, "You need to send some ETH");
-        // require(msg.value <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
+        require(msg.value > 0, "You need to send some ETH");
+        require(msg.value / 1e18 <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
+        require(!availableIncome, "You can't deposit value Income");
 
         (bool success, ) = _to.call{value: msg.value}("");
         require(success, "Withdraw failed");
 
-        // valueIncome = uint64(msg.value);
-        // emit ValueIncomeSet(msg.value);
+        valueIncome = uint64(msg.value / 1e18);
+        emit ValueIncomeSet(msg.value);
     }
 
     function send_(address payable _to) external payable {
@@ -109,18 +121,30 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     /**
      * @notice Allows users to claim their share of the income.
      */
-    function getIncome() external payable nonReentrant {
+    function getIncome() external payable {
+        require(availableIncome, "Income not available yet");
+        require(lastRetrieve[msg.sender] < retrieveCounter, "Income already retrieved");
+
+        lastRetrieve[msg.sender] = retrieveCounter;
+
         uint256 tokenBalance = tokenContract.balanceOf(msg.sender);
         require(tokenBalance > 0, "No YMmo tokens owned");
 
-        uint256 totalSupply = tokenContract.totalSupply();
-        uint256 userShare = (tokenBalance * 10 ** 18) / totalSupply;
-        uint256 income = (userShare * valueIncome) / (10 ** 18);
+        // uint256 totalSupply = tokenContract.totalSupply();
+        // uint256 userShare = (tokenBalance * 1e18) / totalSupply;
+        // uint256 income = (userShare * valueIncome) / (1e18);
 
-        (bool success, ) = msg.sender.call{value: income}("");
+        (bool success, ) = msg.sender.call{value: 0.5 ether}("");
         require(success, "Income transfer failed");
 
-        emit IncomeDistributed(msg.sender, income);
+        // emit IncomeDistributed(msg.sender, income);
+    }
+
+    /**
+     * @notice Allows the owner to reset the retrieve state for all users.
+     */
+    function resetRetrieveState() external onlyOwner {
+        retrieveCounter++;
     }
 
     /**

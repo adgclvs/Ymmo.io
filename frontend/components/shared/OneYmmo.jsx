@@ -20,6 +20,9 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
   const [balanceInYmmoContract, setBalanceInYmmoContract] = useState(null);
   const [balanceInYmmoUser, setBalanceInYmmoUser] = useState(null);
 
+  const [valueWithdraw, setValueWithdraw] = useState(null);
+  const [addressWithdraw, setAddressWithdraw] = useState(null);
+
   const [ethPriceInUSD, setEthPriceInUSD] = useState(null);
 
   //------------CHAINLINK----------------------------------
@@ -117,7 +120,7 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     let price;
     try {
       if (ethPriceInUSD) {
-        price = (valueIncome + 0.01 * valueIncome) / ethPriceInUSD;
+        price = (valueIncome * valueIncome) / ethPriceInUSD;
         price = parseEther(price.toString());
       }
       let test = "0.01";
@@ -133,6 +136,8 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
       console.log(error);
     }
   };
+
+  console.log(error);
 
   const {
     isLoading: isConfirming,
@@ -155,10 +160,10 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     let price;
     try {
       if (ethPriceInUSD) {
-        price = (amountToBuy * amountToBuy) / ethPriceInUSD;
+        price = amountToBuy / ethPriceInUSD;
         price = parseEther(price.toString());
       }
-      let test = "1.1";
+      let test = "1";
       buyWriteContract({
         address: addressContract,
         abi: ymmoContractAbi,
@@ -178,6 +183,121 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     error: buyErrorConfirmation,
   } = useWaitForTransactionReceipt({
     buyHash,
+  });
+
+  //------------------------------------------------------------------
+
+  const {
+    data: getIncomeHash,
+    error: getIncomeError,
+    isPending: getIncomeIsPending,
+    writeContract: getIncomeWriteContract,
+  } = useWriteContract({});
+
+  const getIncome = async () => {
+    getIncomeWriteContract({
+      address: addressContract,
+      abi: ymmoContractAbi,
+      functionName: "getIncome",
+      account: address,
+    });
+  };
+
+  const {
+    isLoading: getIncomeIsConfirming,
+    isSuccess: getIncomeIsSuccess,
+    error: getIncomeErrorConfirmation,
+  } = useWaitForTransactionReceipt({
+    buyHash,
+  });
+
+  console.log(getIncomeError);
+
+  //------------------------------------------------------------------
+
+  const {
+    data: changeIncomeHash,
+    error: changeIncomeError,
+    isPending: changeIncomeIsPending,
+    writeContract: changeIncomeWriteContract,
+  } = useWriteContract({});
+
+  const changeIncome = async () => {
+    changeIncomeWriteContract({
+      address: addressContract,
+      abi: ymmoContractAbi,
+      functionName: "changeAvailableIncome",
+      account: address,
+    });
+  };
+
+  const {
+    isLoading: changeIncomeIsConfirming,
+    isSuccess: changeIncomeIsSuccess,
+    error: changeIncomeErrorConfirmation,
+  } = useWaitForTransactionReceipt({
+    changeIncomeHash,
+  });
+
+  //------------------------------------------------------------------
+
+  const {
+    data: resetRetrieveHash,
+    error: resetRetrieveError,
+    isPending: resetRetrieveIsPending,
+    writeContract: resetRetrieveWriteContract,
+  } = useWriteContract({});
+
+  const resetRetrieveState = async () => {
+    resetRetrieveWriteContract({
+      address: addressContract,
+      abi: ymmoContractAbi,
+      functionName: "resetRetrieveState",
+    });
+  };
+
+  const {
+    isLoading: resetRetrieveIsConfirming,
+    isSuccess: resetRetrieveIsSuccess,
+    error: resetRetrieveErrorConfirmation,
+  } = useWaitForTransactionReceipt({
+    changeIncomeHash,
+  });
+
+  //------------------------------------------------------------------
+
+  const {
+    data: withdrawHash,
+    error: withdrawError,
+    isPending: withdrawIsPending,
+    writeContract: withdrawWriteContract,
+  } = useWriteContract({});
+
+  const withdraw = async () => {
+    let price;
+    try {
+      if (ethPriceInUSD) {
+        price = valueWithdraw / ethPriceInUSD;
+        price = parseEther(price.toString());
+      }
+      let test = "1";
+      withdrawWriteContract({
+        address: addressContract,
+        abi: ymmoContractAbi,
+        functionName: "withdrawETH",
+        args: [addressWithdraw, parseEther(test.toString())],
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const {
+    isLoading: withdrawIsConfirming,
+    isSuccess: withdrawIsSuccess,
+    error: withdrawErrorConfirmation,
+  } = useWaitForTransactionReceipt({
+    changeIncomeHash,
   });
 
   //------------------------------------------------------------------
@@ -276,6 +396,37 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
             >
               {isPending ? "Submitting..." : "Set Income"}
             </Button>
+            <Button
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
+              onClick={changeIncome}
+              disabled={changeIncomeIsPending}
+            >
+              {isPending ? "Submitting..." : "Change available status"}
+            </Button>
+            <Button
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
+              onClick={resetRetrieveState}
+              disabled={resetRetrieveIsPending}
+            >
+              {isPending ? "Submitting..." : "Authorize retreive"}
+            </Button>
+            <Input
+              className="w-full p-2 border border-gray-300 rounded mt-2"
+              placeholder="Withdraw (€)"
+              onChange={(e) => setValueWithdraw(e.target.value)}
+            />
+            <Input
+              className="w-full p-2 border border-gray-300 rounded mt-2"
+              placeholder="Address"
+              onChange={(e) => setAddressWithdraw(e.target.value.toString())}
+            />
+            <Button
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
+              onClick={withdraw}
+              disabled={withdrawIsPending}
+            >
+              {isPending ? "withdraw..." : "Withdraw"}
+            </Button>
           </div>
         ) : (
           <div className="mt-4 p-2 bg-gray-100 rounded-lg">
@@ -290,6 +441,13 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
               disabled={isPending}
             >
               {isPending ? "Buying..." : "Buy"}
+            </Button>
+            <Button
+              className="w-full p-2 bg-blue-500 text-white rounded hover:bg-blue-600 mt-2"
+              onClick={getIncome}
+              disabled={isPending}
+            >
+              {isPending ? "Sending..." : "Retrieve your income !"}
             </Button>
           </div>
         ))}

@@ -1,6 +1,6 @@
 // 0xd2Af079fAaa3E96449ecbCa72fdbD599a1B20057
 
-export const contractAddress = "0x851356ae760d987E095750cCeb3bC6014560891C";
+export const contractAddress = "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d";
 export const contractAbi = [
   {
     inputs: [],
@@ -255,6 +255,19 @@ export const ymmoContractAbi = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "availableIncome",
+    outputs: [
+      {
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       {
         internalType: "address payable",
@@ -265,6 +278,13 @@ export const ymmoContractAbi = [
     name: "buyTokens",
     outputs: [],
     stateMutability: "payable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "changeAvailableIncome",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -301,6 +321,25 @@ export const ymmoContractAbi = [
     type: "function",
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    name: "lastRetrieve",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "owner",
     outputs: [
@@ -318,6 +357,26 @@ export const ymmoContractAbi = [
     name: "renounceOwnership",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "resetRetrieveState",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "retrieveCounter",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
