@@ -16,8 +16,6 @@ import "./Token.sol";
  * @dev Inherits from Ownable and ReentrancyGuardUpgradeable.
  */
 contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
-    uint256 private constant PRICE_PER_TOKEN = 1;
-
     uint128 public valueOfYmmo;
     uint64 public indexOfYmmo;
     uint64 public valueIncome;
@@ -61,7 +59,7 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         require(_valueOfYmmo > 0, "Value of Ymmo must be greater than 0");
         valueOfYmmo = _valueOfYmmo;
         indexOfYmmo = _indexOfYmmo;
-        availableIncome = true;
+        retrieveCounter = 1;
         string memory name = "YMMO";
         string memory symbol = string(abi.encodePacked("YMMO_", Strings.toString(_indexOfYmmo)));
         tokenContract = IERC20(new Token(_valueOfYmmo, name, symbol));
@@ -84,11 +82,6 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
 
         valueIncome = uint64(msg.value / 1e18);
         emit ValueIncomeSet(msg.value);
-    }
-
-    function send_(address payable _to) external payable {
-        (bool success, ) = _to.call{value: msg.value}("");
-        require(success, "Withdraw failed");
     }
 
     /**
@@ -130,14 +123,14 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         uint256 tokenBalance = tokenContract.balanceOf(msg.sender);
         require(tokenBalance > 0, "No YMmo tokens owned");
 
-        // uint256 totalSupply = tokenContract.totalSupply();
-        // uint256 userShare = (tokenBalance * 1e18) / totalSupply;
-        // uint256 income = (userShare * valueIncome) / (1e18);
+        uint256 totalSupply = tokenContract.totalSupply();
+        uint256 userShare = (tokenBalance * 1e18) / totalSupply;
+        uint256 income = (userShare * valueIncome);
 
-        (bool success, ) = msg.sender.call{value: 0.5 ether}("");
+        (bool success, ) = msg.sender.call{value: income}("");
         require(success, "Income transfer failed");
 
-        // emit IncomeDistributed(msg.sender, income);
+        emit IncomeDistributed(msg.sender, income);
     }
 
     /**
