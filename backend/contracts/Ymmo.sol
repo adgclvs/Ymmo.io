@@ -65,6 +65,11 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         tokenContract = IERC20(new Token(_valueOfYmmo, name, symbol));
     }
 
+    /**
+     * @dev Function to change the availability of income.
+     * Only the contract owner can call this function.
+     * When called, it toggles the value of `availableIncome`.
+     */
     function changeAvailableIncome() external onlyOwner {
         availableIncome = !availableIncome;
     }
