@@ -104,7 +104,7 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
 
         uint256 ethInDollarsUint = 3000;
 
-        uint256 tokensToBuy = (ethInDollarsUint * msg.value) / 1e18;
+        uint256 tokensToBuy = (ethInDollarsUint * msg.value);
 
         require(tokenContract.balanceOf(address(this)) >= tokensToBuy, "Not enough tokens in the reserve");
 
@@ -128,7 +128,7 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         require(tokenBalance > 0, "No YMmo tokens owned");
 
         uint256 totalSupply = tokenContract.totalSupply();
-        uint256 userShare = (tokenBalance * 1e18) / totalSupply;
+        uint256 userShare = tokenBalance / totalSupply;
         uint256 income = (userShare * valueIncome);
 
         (bool success, ) = msg.sender.call{value: income}("");

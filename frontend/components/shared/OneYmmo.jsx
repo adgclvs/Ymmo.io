@@ -1,6 +1,5 @@
 import { ToastAction } from "@/components/ui/toast";
 import { useToast } from "@/components/ui/use-toast";
-import axios from "axios";
 import { useEffect, useState } from "react";
 import { parseEther } from "viem";
 import { useAccount, useBalance, useReadContract, useWaitForTransactionReceipt, useWriteContract } from "wagmi";
@@ -30,18 +29,18 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
 
   //------------CHAINLINK----------------------------------
 
-  const { data: ethPrice } = useReadContract({
-    address: addressContract,
-    abi: ymmoContractAbi,
-    functionName: "getChainlinkDataFeedLatestAnswer",
-  });
+  // const { data: ethPrice } = useReadContract({
+  //   address: addressContract,
+  //   abi: ymmoContractAbi,
+  //   functionName: "getChainlinkDataFeedLatestAnswer",
+  // });
 
-  useEffect(() => {
-    if (ethPrice) {
-      const ethPriceInUSD = Number(ethPrice) / 10 ** 8;
-      setEthPriceInUSD(ethPriceInUSD); // Price of 1 ETHER in USD
-    }
-  }, [ethPrice]);
+  // useEffect(() => {
+  //   if (ethPrice) {
+  //     const ethPriceInUSD = Number(ethPrice) / 10 ** 8;
+  //     setEthPriceInUSD(ethPriceInUSD); // Price of 1 ETHER in USD
+  //   }
+  // }, [ethPrice]);
 
   //-------------------DATA---------------------------
 
@@ -126,7 +125,7 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
         price = valueIncome / ethPriceInUSD;
         price = parseEther(price.toString());
       }
-      price = "1"; // Remove
+      price = "1";
 
       writeContract({
         address: addressContract,
@@ -417,7 +416,7 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
         address: addressContract,
         abi: ymmoContractAbi,
         functionName: "withdrawETH",
-        args: [addressWithdraw, parseEther(test.toString())],
+        args: [addressWithdraw, parseEther(test)],
       });
     } catch (error) {
       toast({
@@ -529,11 +528,13 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
           </p>
           <p className="text-gray-600">
             Balance of token:{" "}
-            <span className="font-medium">{balanceInYmmoContract ? balanceInYmmoContract : "Loading..."} YMMO</span>
+            <span className="font-medium">
+              {balanceInYmmoContract ? balanceInYmmoContract / 10 ** 18 : "Loading..."} YMMO
+            </span>
           </p>
           <p className="text-gray-600">
             Your balance on this YMMO:{" "}
-            <span className="font-medium">{balanceInYmmoUser ? balanceInYmmoUser : "0"} YMMO</span>
+            <span className="font-medium">{balanceInYmmoUser ? balanceInYmmoUser / 10 ** 18 : "0"} YMMO</span>
           </p>
         </div>
       </div>

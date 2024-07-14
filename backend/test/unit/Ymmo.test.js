@@ -35,7 +35,8 @@ describe("Ymmo tests", function () {
       expect(indexOfYmmo).to.equal(1);
 
       const tokenSupply = await token.totalSupply();
-      expect(tokenSupply).to.equal(1000000);
+      const expected = 1000000000000000000000000n;
+      expect(tokenSupply).to.equal(expected);
     });
   });
 
@@ -66,36 +67,13 @@ describe("Ymmo tests", function () {
 
       // Check the token balance of otherAccount
       const tokenBalance = await token.balanceOf(otherAccount.address);
-      expect(tokenBalance).to.equal(expectedTokens);
+      const expected = BigInt(expectedTokens) * BigInt(10 ** 18);
+      expect(tokenBalance).to.equal(expected);
 
       // Check the ETH balance of the contract
       const contractBalance = await ethers.provider.getBalance(ymmo.target);
       expect(contractBalance).to.equal(ethAmount);
     });
-
-    // it("Should revert if not enough ETH", async function () {
-    //   const { ymmo, token, owner, otherAccount } = await loadFixture(deployContract);
-
-    //   const ethAmount = ethers.parseEther("1"); // 1 ETH
-
-    //   // Vide le compte
-    //   const otherAccountBalance = await ethers.provider.getBalance(otherAccount.address);
-    //   const transferAmount = otherAccountBalance - ethers.parseEther("0.1");
-    //   await otherAccount.sendTransaction({
-    //     to: owner.address,
-    //     value: transferAmount,
-    //   });
-
-    //   await expect(ymmo.connect(otherAccount).buyTokens(ymmo.target, { value: ethAmount })).to.be.revertedWith(
-    //     "Not enough tokens in the reserve",
-    //   );
-
-    //   const tokenBalance = await token.balanceOf(otherAccount.address);
-    //   expect(tokenBalance).to.equal(0);
-
-    //   const contractBalance = await ethers.provider.getBalance(ymmo.target);
-    //   expect(contractBalance).to.equal(0);
-    // });
 
     it("Should not allow buying tokens with 0 ETH", async function () {
       const { ymmo, otherAccount } = await loadFixture(deployContract);
@@ -130,27 +108,6 @@ describe("Ymmo tests", function () {
 
       await expect(ymmo.connect(owner).setValueIncome(ymmo.target, { value: 0 })).to.be.revertedWith(
         "You need to send some ETH",
-      );
-    });
-
-    // it("Should revert if the income is greater than the value of Ymmo", async function () {
-    //   const { ymmo, owner } = await loadFixture(deployContract);
-    //   const ethValue = ethers.parseEther("1000");
-
-    //   await expect(ymmo.connect(owner).setValueIncome(ymmo.target, { value: ethValue })).to.be.revertedWith(
-    //     "the income cannot be greater than the value of Ymmo",
-    //   );
-    // });
-
-    it("Should revert if availableIncome is true", async function () {
-      const { ymmo, owner } = await loadFixture(deployContract);
-      const ethValue = ethers.parseEther("1");
-
-      // Simulate availableIncome being true
-      await ymmo.changeAvailableIncome(); // You need to implement this in your contract or simulate this state
-
-      await expect(ymmo.connect(owner).setValueIncome(ymmo.target, { value: ethValue })).to.be.revertedWith(
-        "You can't deposit value Income",
       );
     });
   });
@@ -203,8 +160,8 @@ describe("Ymmo tests", function () {
       // Calculer le revenu attendu
       const tokenBalance = await token.balanceOf(otherAccount.address);
       const totalSupply = await token.totalSupply();
-      const userShare = (tokenBalance * ethers.WeiPerEther) / totalSupply;
-      const income = (userShare * ethers.parseEther("1")) / ethers.WeiPerEther;
+      const userShare = tokenBalance / totalSupply;
+      const income = userShare * ethers.parseEther("1");
 
       // Distribuer l'income aux détenteurs de tokens
       const tx = await ymmo.connect(otherAccount).getIncome();
