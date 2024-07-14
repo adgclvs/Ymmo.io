@@ -126,14 +126,12 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
         price = valueIncome / ethPriceInUSD;
         price = parseEther(price.toString());
       }
-      price = "1"; // Remove
-
       writeContract({
         address: addressContract,
         abi: ymmoContractAbi,
         functionName: "setValueIncome",
         args: [addressContract],
-        value: parseEther(price),
+        value: price,
         account: address,
       });
     } catch (error) {
@@ -189,13 +187,12 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
         price = amountToBuy / ethPriceInUSD;
         price = parseEther(price.toString());
       }
-      let test = "1";
       buyWriteContract({
         address: addressContract,
         abi: ymmoContractAbi,
         functionName: "buyTokens",
         args: [addressContract],
-        value: parseEther(test.toString()),
+        value: price,
         account: address,
       });
     } catch (error) {
@@ -412,12 +409,11 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
         price = valueWithdraw / ethPriceInUSD;
         price = parseEther(price.toString());
       }
-      let test = "1";
       withdrawWriteContract({
         address: addressContract,
         abi: ymmoContractAbi,
         functionName: "withdrawETH",
-        args: [addressWithdraw, parseEther(test.toString())],
+        args: [addressWithdraw, price],
       });
     } catch (error) {
       toast({
@@ -529,11 +525,13 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
           </p>
           <p className="text-gray-600">
             Balance of token:{" "}
-            <span className="font-medium">{balanceInYmmoContract ? balanceInYmmoContract : "Loading..."} YMMO</span>
+            <span className="font-medium">
+              {balanceInYmmoContract ? balanceInYmmoContract / 10 ** 18 : "Loading..."} YMMO
+            </span>
           </p>
           <p className="text-gray-600">
             Your balance on this YMMO:{" "}
-            <span className="font-medium">{balanceInYmmoUser ? balanceInYmmoUser : "0"} YMMO</span>
+            <span className="font-medium">{balanceInYmmoUser ? balanceInYmmoUser / 10 ** 18 : "0"} YMMO</span>
           </p>
         </div>
       </div>
