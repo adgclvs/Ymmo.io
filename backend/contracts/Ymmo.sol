@@ -6,7 +6,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@openzeppelin/contracts-upgradeable/security/ReentrancyGuardUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/utils/ReentrancyGuardUpgradeable.sol";
 import "./DataConsumerV3.sol";
 import "./Token.sol";
 
@@ -80,7 +80,6 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
     function setValueIncome(address payable _to) external payable onlyOwner {
         require(msg.value > 0, "You need to send some ETH");
         require(msg.value / 1e18 <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
-        require(!availableIncome, "You can't deposit value Income");
 
         (bool success, ) = _to.call{value: msg.value}("");
         require(success, "Withdraw failed");

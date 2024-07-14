@@ -36,6 +36,3 @@ jobs:
         run: |
           cd backend
           npx hardhat test
-        env:
-          SEPOLIA_PRIVATE_KEY: ${{ secrets.SEPOLIA_PRIVATE_KEY }}
-          INFURA_PROJECT_ID: ${{ secrets.INFURA_PROJECT_ID }}

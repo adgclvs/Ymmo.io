@@ -10,6 +10,8 @@ async function main() {
   const ymmoFactory = await YmmoFactory.deploy();
   await ymmoFactory.waitForDeployment();
   console.log("YmmoFactory deployed to:", ymmoFactory.target);
+
+  await ymmoFactory.createYmmo(1000000);
 }
 
 main()

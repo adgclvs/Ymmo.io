@@ -123,16 +123,17 @@ const OneYmmo = ({ addressContract, IRLAddress, APY }) => {
     let price;
     try {
       if (ethPriceInUSD) {
-        price = (valueIncome * valueIncome) / ethPriceInUSD;
+        price = valueIncome / ethPriceInUSD;
         price = parseEther(price.toString());
       }
-      let test = "0.01";
+      price = "1"; // Remove
+
       writeContract({
         address: addressContract,
         abi: ymmoContractAbi,
         functionName: "setValueIncome",
         args: [addressContract],
-        value: parseEther(test.toString()),
+        value: parseEther(price),
         account: address,
       });
     } catch (error) {
