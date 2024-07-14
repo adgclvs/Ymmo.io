@@ -79,7 +79,7 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
      */
     function setValueIncome(address payable _to) external payable onlyOwner {
         require(msg.value > 0, "You need to send some ETH");
-        require(msg.value / (10 ** 18) <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
+        require(msg.value / 1e18 <= valueOfYmmo, "the income cannot be greater than the value of Ymmo");
 
         (bool success, ) = _to.call{value: msg.value}("");
         require(success, "Withdraw failed");
@@ -97,12 +97,14 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         (bool success, ) = _to.call{value: msg.value}("");
         require(success, "Withdraw failed");
 
-        int256 ethInDollars = getChainlinkDataFeedLatestAnswer();
-        require(ethInDollars > 0, "Invalid price feed value");
+        // int256 ethInDollars = getChainlinkDataFeedLatestAnswer();
+        // require(ethInDollars > 0, "Invalid price feed value");
 
-        uint256 ethInDollarsUint = uint256(ethInDollars / 1e8);
+        // uint256 ethInDollarsUint = uint256(ethInDollars / 1e8);
 
-        uint256 tokensToBuy = ethInDollarsUint * msg.value;
+        uint256 ethInDollarsUint = 3000;
+
+        uint256 tokensToBuy = (ethInDollarsUint * msg.value) / 1e18;
 
         require(tokenContract.balanceOf(address(this)) >= tokensToBuy, "Not enough tokens in the reserve");
 
@@ -126,7 +128,7 @@ contract Ymmo is Ownable, ReentrancyGuardUpgradeable, DataConsumerV3 {
         require(tokenBalance > 0, "No YMmo tokens owned");
 
         uint256 totalSupply = tokenContract.totalSupply();
-        uint256 userShare = tokenBalance / totalSupply;
+        uint256 userShare = (tokenBalance * 1e18) / totalSupply;
         uint256 income = (userShare * valueIncome);
 
         (bool success, ) = msg.sender.call{value: income}("");
